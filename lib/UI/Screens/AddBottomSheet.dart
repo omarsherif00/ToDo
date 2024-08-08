@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/utilties/AppColors.dart';
 import 'package:todo/utilties/AppStyle.dart';
 import 'package:todo/utilties/DateExtenstion.dart';
+import 'package:todo/utilties/todoDM.dart';
 
 class AddBottomSheet extends StatefulWidget {
   const AddBottomSheet({super.key});
@@ -22,7 +25,10 @@ class AddBottomSheet extends StatefulWidget {
 }
 
 class _AddBottomSheetState extends State<AddBottomSheet> {
-  DateTime SelectedDate=DateTime.now();
+  DateTime SelectedDate = DateTime.now();
+  TextEditingController TitleController = TextEditingController();
+  TextEditingController DescreptionController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -40,6 +46,7 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
             height: 12,
           ),
           TextField(
+            controller: TitleController,
             decoration: InputDecoration(
                 hintText: "enter your task", hintStyle: AppStyle.HintTextStyle),
           ),
@@ -47,6 +54,7 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
             height: 12,
           ),
           TextField(
+            controller: DescreptionController,
             decoration: InputDecoration(
                 hintText: "enter your task descreption",
                 hintStyle: AppStyle.HintTextStyle),
@@ -67,9 +75,10 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
           SizedBox(
             height: 12,
           ),
-          InkWell(onTap: (){
-            ShowMyDatePicker();
-          },
+          InkWell(
+            onTap: () {
+              ShowMyDatePicker();
+            },
             child: Text(
               "${SelectedDate.FormatDate}",
               style: AppStyle.AppTextStyle,
@@ -77,7 +86,9 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
           ),
           Spacer(),
           FloatingActionButton(
-            onPressed: () {},
+            onPressed: () {
+              BuildDatabase();
+            },
             child: Icon(Icons.check),
             shape:
                 StadiumBorder(side: BorderSide(width: 4, color: Colors.white)),
@@ -91,12 +102,29 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
   }
 
   void ShowMyDatePicker() async {
-    SelectedDate=await showDatePicker(context: context,
-        initialDate: SelectedDate,
-        firstDate: DateTime.now(),
-        lastDate: DateTime.now().add(Duration(days: 365)))?? SelectedDate;
-    setState(() {
-
-    });
+    SelectedDate = await showDatePicker(
+            context: context,
+            initialDate: SelectedDate,
+            firstDate: DateTime.now(),
+            lastDate: DateTime.now().add(Duration(days: 365))) ??
+        SelectedDate;
+    setState(() {});
   }
+
+  void BuildDatabase() {
+    CollectionReference todosCollection =
+        FirebaseFirestore.instance.collection(TodoDM.CollectionName);
+    DocumentReference doc = todosCollection.doc();
+    TodoDM tododm = TodoDM(
+        title: TitleController.text,
+        date: SelectedDate,
+        descreption: DescreptionController.text,
+        id: doc.id,
+        ischecked: false);
+    doc.set(tododm.Tojson()).timeout(
+          Duration(microseconds: 500),
+          onTimeout: () => Navigator.pop(context),
+        );
+  }
+
 }

@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/UI/Screens/task.dart';
 import 'package:todo/utilties/AppColors.dart';
+import 'package:todo/utilties/todoDM.dart';
 
 class ListTab extends StatefulWidget {
   const ListTab({super.key});
@@ -10,21 +13,45 @@ class ListTab extends StatefulWidget {
 }
 
 class _ListTabState extends State<ListTab> {
+  List<TodoDM> TodosList = [];
   DateTime selectedcalenderdate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
+    LoadDataFromDatabase();
     return Column(
-      children: [buildcalendar(),
-      Spacer(flex: 77,)
+      children: [
+        buildcalendar(),
+        Expanded(
+          flex: 77,
+          child: ListView.builder(
+            itemCount: TodosList.length,
+            itemBuilder: (context, index) {
+              return Task(item: TodosList[index]);
+            },),
+
+        )
       ],
     );
   }
 
   buildcalendar() {
-    return Expanded(flex: 23,
+    return Expanded(
+      flex: 23,
       child: Stack(
-        children: [Column(children: [Expanded(child: Container(color: AppColors.secondryLight,)),Expanded(child: Container(color: AppColors.PrimaryLight,))],),
+        children: [
+          Column(
+            children: [
+              Expanded(
+                  child: Container(
+                    color: AppColors.secondryLight,
+                  )),
+              Expanded(
+                  child: Container(
+                    color: AppColors.PrimaryLight,
+                  ))
+            ],
+          ),
           EasyInfiniteDateTimeLine(
             firstDate: DateTime.now().subtract(const Duration(days: 365)),
             focusDate: selectedcalenderdate,
@@ -32,25 +59,55 @@ class _ListTabState extends State<ListTab> {
             onDateChange: (selectedDate) {
               selectedcalenderdate = selectedDate;
               setState(() {});
-            },timeLineProps: EasyTimeLineProps(separatorPadding: 19),
+            },
+            timeLineProps: EasyTimeLineProps(separatorPadding: 19),
             dayProps: const EasyDayProps(
-              todayStyle: DayStyle(decoration: BoxDecoration(color: Colors.white,borderRadius:BorderRadius.all(Radius.circular(24)))),
+              todayStyle: DayStyle(
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(24)))),
               inactiveDayStyle: DayStyle(
-                decoration: BoxDecoration(color: Colors.white,borderRadius:BorderRadius.all(Radius.circular(24))),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(24))),
               ),
               activeDayStyle: DayStyle(
                   dayNumStyle: TextStyle(
-                      color: Colors.blue, fontSize: 16, fontWeight: FontWeight.bold),
+                      color: Colors.blue,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
                   dayStrStyle: TextStyle(
-                      color: Colors.blue, fontSize: 16, fontWeight: FontWeight.bold),
+                      color: Colors.blue,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
                   monthStrStyle: TextStyle(
-                      color: Colors.blue, fontSize: 16, fontWeight: FontWeight.bold),
-                  decoration: BoxDecoration(color: Colors.white,borderRadius:BorderRadius.all(Radius.circular(24)))),
+                      color: Colors.blue,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(24)))),
             ),
             activeColor: Colors.white,
           ),
         ],
       ),
     );
+  }
+
+  void LoadDataFromDatabase() async {
+    CollectionReference ref =
+    FirebaseFirestore.instance.collection(TodoDM.CollectionName);
+    QuerySnapshot querySnapshot = await ref.get();
+    List<QueryDocumentSnapshot> todos = querySnapshot.docs;
+
+    TodosList = todos.map((doc) {
+      Map<String, dynamic> json = doc.data() as Map<String, dynamic>;
+      return TodoDM.fromjson(json);
+    }).toList();
+   TodosList= TodosList.where((todo) =>
+    todo.date.year == selectedcalenderdate.year &&
+        todo.date.month == selectedcalenderdate.month &&
+        todo.date.day == selectedcalenderdate.day).toList();
   }
 }
