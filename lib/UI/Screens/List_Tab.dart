@@ -14,7 +14,7 @@ class ListTab extends StatefulWidget {
 
 class _ListTabState extends State<ListTab> {
   List<TodoDM> TodosList = [];
-  DateTime selectedcalenderdate = DateTime.now();
+  DateTime SelectedCalenderDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -54,10 +54,10 @@ class _ListTabState extends State<ListTab> {
           ),
           EasyInfiniteDateTimeLine(
             firstDate: DateTime.now().subtract(const Duration(days: 365)),
-            focusDate: selectedcalenderdate,
+            focusDate: SelectedCalenderDate,
             lastDate: DateTime.now().add(const Duration(days: 365)),
             onDateChange: (selectedDate) {
-              selectedcalenderdate = selectedDate;
+              SelectedCalenderDate = selectedDate;
               setState(() {});
             },
             timeLineProps: EasyTimeLineProps(separatorPadding: 19),
@@ -106,8 +106,8 @@ class _ListTabState extends State<ListTab> {
       return TodoDM.fromjson(json);
     }).toList();
    TodosList= TodosList.where((todo) =>
-    todo.date.year == selectedcalenderdate.year &&
-        todo.date.month == selectedcalenderdate.month &&
-        todo.date.day == selectedcalenderdate.day).toList();
+    todo.date.year == SelectedCalenderDate.year &&
+        todo.date.month == SelectedCalenderDate.month &&
+        todo.date.day == SelectedCalenderDate.day).toList();
   }
 }

@@ -34,7 +34,7 @@ class Task extends StatelessWidget {
           item.title,
           style: AppStyle.TaskStyle,
 
-        ),
+        ),SizedBox(height: 7,),
         Text(
           item.descreption,
           style: AppStyle.TasksmallStyle,

@@ -11,6 +11,8 @@ class AppStyle{
   static  TextStyle TaskCheckedStyle=TextStyle(color: Color(0xff60e556),fontWeight: FontWeight.w700,fontSize: 18);
   static  TextStyle AppTextStyle=TextStyle(color: Colors.black,fontWeight: FontWeight.w400,fontSize: 20);
   static  TextStyle HintTextStyle=TextStyle(color: AppColors.grey,fontWeight: FontWeight.w500,fontSize: 14);
+  static const String Splashlight="assets/images/lightsplash.png";
+
 
 
 
