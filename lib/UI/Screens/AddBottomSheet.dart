@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/UI/Screens/task.dart';
 import 'package:todo/utilties/AppColors.dart';
 import 'package:todo/utilties/AppStyle.dart';
 import 'package:todo/utilties/DateExtenstion.dart';
@@ -29,7 +30,7 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
   DateTime SelectedDate = DateTime.now();
   TextEditingController TitleController = TextEditingController();
   TextEditingController DescreptionController = TextEditingController();
-
+  bool ischecked = false;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -123,7 +124,7 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
         date: SelectedDate,
         descreption: DescreptionController.text,
         id: doc.id,
-        ischecked: false);
+        ischecked:ischecked);
     doc.set(tododm.Tojson()).then((value) => Navigator.pop(context));
   }
 }

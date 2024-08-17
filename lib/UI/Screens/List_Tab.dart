@@ -2,9 +2,11 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/UI/Screens/task.dart';
 import 'package:todo/utilties/AppColors.dart';
+import 'package:todo/utilties/dialogs.dart';
 import 'package:todo/utilties/todoDM.dart';
 import 'package:todo/utilties/usermodel.dart';
 
@@ -35,7 +37,26 @@ class ListTabState extends State<ListTab> {
           child: ListView.builder(
             itemCount: TodosList.length,
             itemBuilder: (context, index) {
-              return Task(item: TodosList[index]);
+              return Dismissible(
+                onDismissed: (direction) {
+                ShowErrorDialog(context,title: "The Task Is Deleted", ButtounTitle: "ok");
+                  DeleteData(TodosList[index]);
+                setState(() {
+                  TodosList.removeAt(index); // Optionally remove the item from the list
+                });
+              },
+                dragStartBehavior: DragStartBehavior.down,
+                direction: DismissDirection.startToEnd,
+                background: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(24),color: Colors.red),child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.delete,size: 50),
+                  ],
+                )),
+                key: ValueKey<TodoDM>(TodosList[index]),
+                child: ListTile(title: Task(item: TodosList[index]),
+                ),
+              );
             },),
 
         )
@@ -67,7 +88,7 @@ class ListTabState extends State<ListTab> {
             onDateChange: (selectedDate) {
               setState(() {
                 SelectedCalenderDate = selectedDate;
-                LoadDataFromDatabase();
+                 LoadDataFromDatabase();
 
               });
               },
@@ -122,5 +143,12 @@ class ListTabState extends State<ListTab> {
         todo.date.day == SelectedCalenderDate.day).toList();
    setState(() {
    });
+  }
+
+  void DeleteData(TodoDM todo) {
+    FirebaseFirestore.instance.collection(UserDM.CollectionName).doc(UserDM.currentUser!.ID).collection(TodoDM.CollectionName).doc(todo.id).delete().then(
+          (doc) => print("Document deleted"),
+      onError: (e) => print("Error updating document $e"),
+    );
   }
 }

@@ -3,11 +3,17 @@ import 'package:todo/utilties/AppColors.dart';
 import 'package:todo/utilties/AppStyle.dart';
 import 'package:todo/utilties/todoDM.dart';
 
-class Task extends StatelessWidget {
+class Task extends StatefulWidget {
   TodoDM item;
+
 
   Task({super.key, required this.item});
 
+  @override
+  State<Task> createState() => _TaskState();
+}
+ bool isDone=false;
+class _TaskState extends State<Task> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -31,12 +37,12 @@ class Task extends StatelessWidget {
     return Expanded(flex:90 ,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(
-          item.title,
+          widget.item.title,
           style: AppStyle.TaskStyle,
 
         ),SizedBox(height: 7,),
         Text(
-          item.descreption,
+          widget.item.descreption,
           style: AppStyle.TasksmallStyle,
 
         )
@@ -45,13 +51,20 @@ class Task extends StatelessWidget {
   }
 
   CheckboxButton() {
-    return Container(
-      child: Icon(Icons.check, size: 40,color: Colors.white),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: AppColors.secondryLight,
+    return InkWell(
+      onTap: (){
+        setState(() {
+          isDone=!isDone;
+        });
+        },
+      child: Container(
+        child: Icon(Icons.check, size: 40,color: Colors.white),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: AppColors.secondryLight,
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 12,vertical: 6),
       ),
-      padding: EdgeInsets.symmetric(horizontal: 12,vertical: 6),
     );
   }
 
@@ -65,4 +78,5 @@ class Task extends StatelessWidget {
       ),
     );
   }
+
 }

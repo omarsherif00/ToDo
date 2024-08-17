@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TodoDM{
   static const String CollectionName="todo";
+  static TodoDM? Todo;
  late String title;
   late String descreption;
  late String id;
