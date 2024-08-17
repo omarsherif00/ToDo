@@ -1,24 +1,32 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/UI/Screens/task.dart';
 import 'package:todo/utilties/AppColors.dart';
 import 'package:todo/utilties/todoDM.dart';
+import 'package:todo/utilties/usermodel.dart';
 
 class ListTab extends StatefulWidget {
   const ListTab({super.key});
 
   @override
-  State<ListTab> createState() => _ListTabState();
+  State<ListTab> createState() => ListTabState();
 }
 
-class _ListTabState extends State<ListTab> {
+class ListTabState extends State<ListTab> {
   List<TodoDM> TodosList = [];
   DateTime SelectedCalenderDate = DateTime.now();
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
     LoadDataFromDatabase();
+  }
+  @override
+  Widget build(BuildContext context) {
+
     return Column(
       children: [
         buildcalendar(),
@@ -57,9 +65,12 @@ class _ListTabState extends State<ListTab> {
             focusDate: SelectedCalenderDate,
             lastDate: DateTime.now().add(const Duration(days: 365)),
             onDateChange: (selectedDate) {
-              SelectedCalenderDate = selectedDate;
-              setState(() {});
-            },
+              setState(() {
+                SelectedCalenderDate = selectedDate;
+                LoadDataFromDatabase();
+
+              });
+              },
             timeLineProps: EasyTimeLineProps(separatorPadding: 19),
             dayProps: const EasyDayProps(
               todayStyle: DayStyle(
@@ -97,7 +108,7 @@ class _ListTabState extends State<ListTab> {
 
   void LoadDataFromDatabase() async {
     CollectionReference ref =
-    FirebaseFirestore.instance.collection(TodoDM.CollectionName);
+    FirebaseFirestore.instance.collection(UserDM.CollectionName).doc(UserDM.currentUser!.ID).collection(TodoDM.CollectionName);
     QuerySnapshot querySnapshot = await ref.get();
     List<QueryDocumentSnapshot> todos = querySnapshot.docs;
 
@@ -109,5 +120,7 @@ class _ListTabState extends State<ListTab> {
     todo.date.year == SelectedCalenderDate.year &&
         todo.date.month == SelectedCalenderDate.month &&
         todo.date.day == SelectedCalenderDate.day).toList();
+   setState(() {
+   });
   }
 }

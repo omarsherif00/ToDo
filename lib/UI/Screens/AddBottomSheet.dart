@@ -5,6 +5,7 @@ import 'package:todo/utilties/AppColors.dart';
 import 'package:todo/utilties/AppStyle.dart';
 import 'package:todo/utilties/DateExtenstion.dart';
 import 'package:todo/utilties/todoDM.dart';
+import 'package:todo/utilties/usermodel.dart';
 
 class AddBottomSheet extends StatefulWidget {
   const AddBottomSheet({super.key});
@@ -12,8 +13,8 @@ class AddBottomSheet extends StatefulWidget {
   @override
   State<AddBottomSheet> createState() => _AddBottomSheetState();
 
-  static void show(BuildContext context) {
-    showModalBottomSheet(
+  static Future show(BuildContext context) {
+    return showModalBottomSheet(
         isScrollControlled: true,
         context: context,
         builder: (context) {
@@ -112,8 +113,10 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
   }
 
   void BuildDatabase() {
-    CollectionReference todosCollection =
-        FirebaseFirestore.instance.collection(TodoDM.CollectionName);
+    CollectionReference todosCollection = FirebaseFirestore.instance
+        .collection(UserDM.CollectionName)
+        .doc(UserDM.currentUser!.ID)
+        .collection(TodoDM.CollectionName);
     DocumentReference doc = todosCollection.doc();
     TodoDM tododm = TodoDM(
         title: TitleController.text,
@@ -121,10 +124,6 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
         descreption: DescreptionController.text,
         id: doc.id,
         ischecked: false);
-    doc.set(tododm.Tojson()).timeout(
-          Duration(microseconds: 500),
-          onTimeout: () => Navigator.pop(context),
-        );
+    doc.set(tododm.Tojson()).then((value) => Navigator.pop(context));
   }
-
 }
