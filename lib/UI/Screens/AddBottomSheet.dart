@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/UI/Screens/task.dart';
 import 'package:todo/utilties/AppColors.dart';
 import 'package:todo/utilties/AppStyle.dart';
 import 'package:todo/utilties/DateExtenstion.dart';
 import 'package:todo/utilties/todoDM.dart';
+import 'package:todo/utilties/usermodel.dart';
 
 class AddBottomSheet extends StatefulWidget {
   const AddBottomSheet({super.key});
@@ -12,8 +14,8 @@ class AddBottomSheet extends StatefulWidget {
   @override
   State<AddBottomSheet> createState() => _AddBottomSheetState();
 
-  static void show(BuildContext context) {
-    showModalBottomSheet(
+  static Future show(BuildContext context) {
+    return showModalBottomSheet(
         isScrollControlled: true,
         context: context,
         builder: (context) {
@@ -28,7 +30,7 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
   DateTime SelectedDate = DateTime.now();
   TextEditingController TitleController = TextEditingController();
   TextEditingController DescreptionController = TextEditingController();
-
+  bool ischecked = false;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -112,19 +114,17 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
   }
 
   void BuildDatabase() {
-    CollectionReference todosCollection =
-        FirebaseFirestore.instance.collection(TodoDM.CollectionName);
+    CollectionReference todosCollection = FirebaseFirestore.instance
+        .collection(UserDM.CollectionName)
+        .doc(UserDM.currentUser!.ID)
+        .collection(TodoDM.CollectionName);
     DocumentReference doc = todosCollection.doc();
     TodoDM tododm = TodoDM(
         title: TitleController.text,
         date: SelectedDate,
         descreption: DescreptionController.text,
         id: doc.id,
-        ischecked: false);
-    doc.set(tododm.Tojson()).timeout(
-          Duration(microseconds: 500),
-          onTimeout: () => Navigator.pop(context),
-        );
+        ischecked:ischecked);
+    doc.set(tododm.Tojson()).then((value) => Navigator.pop(context));
   }
-
 }

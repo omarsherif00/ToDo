@@ -1,24 +1,34 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/UI/Screens/task.dart';
 import 'package:todo/utilties/AppColors.dart';
+import 'package:todo/utilties/dialogs.dart';
 import 'package:todo/utilties/todoDM.dart';
+import 'package:todo/utilties/usermodel.dart';
 
 class ListTab extends StatefulWidget {
   const ListTab({super.key});
 
   @override
-  State<ListTab> createState() => _ListTabState();
+  State<ListTab> createState() => ListTabState();
 }
 
-class _ListTabState extends State<ListTab> {
+class ListTabState extends State<ListTab> {
   List<TodoDM> TodosList = [];
-  DateTime selectedcalenderdate = DateTime.now();
+  DateTime SelectedCalenderDate = DateTime.now();
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
     LoadDataFromDatabase();
+  }
+  @override
+  Widget build(BuildContext context) {
+
     return Column(
       children: [
         buildcalendar(),
@@ -27,7 +37,26 @@ class _ListTabState extends State<ListTab> {
           child: ListView.builder(
             itemCount: TodosList.length,
             itemBuilder: (context, index) {
-              return Task(item: TodosList[index]);
+              return Dismissible(
+                onDismissed: (direction) {
+                ShowErrorDialog(context,title: "The Task Is Deleted", ButtounTitle: "ok");
+                  DeleteData(TodosList[index]);
+                setState(() {
+                  TodosList.removeAt(index); // Optionally remove the item from the list
+                });
+              },
+                dragStartBehavior: DragStartBehavior.down,
+                direction: DismissDirection.startToEnd,
+                background: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(24),color: Colors.red),child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.delete,size: 50),
+                  ],
+                )),
+                key: ValueKey<TodoDM>(TodosList[index]),
+                child: ListTile(title: Task(item: TodosList[index]),
+                ),
+              );
             },),
 
         )
@@ -54,12 +83,15 @@ class _ListTabState extends State<ListTab> {
           ),
           EasyInfiniteDateTimeLine(
             firstDate: DateTime.now().subtract(const Duration(days: 365)),
-            focusDate: selectedcalenderdate,
+            focusDate: SelectedCalenderDate,
             lastDate: DateTime.now().add(const Duration(days: 365)),
             onDateChange: (selectedDate) {
-              selectedcalenderdate = selectedDate;
-              setState(() {});
-            },
+              setState(() {
+                SelectedCalenderDate = selectedDate;
+                 LoadDataFromDatabase();
+
+              });
+              },
             timeLineProps: EasyTimeLineProps(separatorPadding: 19),
             dayProps: const EasyDayProps(
               todayStyle: DayStyle(
@@ -97,7 +129,7 @@ class _ListTabState extends State<ListTab> {
 
   void LoadDataFromDatabase() async {
     CollectionReference ref =
-    FirebaseFirestore.instance.collection(TodoDM.CollectionName);
+    FirebaseFirestore.instance.collection(UserDM.CollectionName).doc(UserDM.currentUser!.ID).collection(TodoDM.CollectionName);
     QuerySnapshot querySnapshot = await ref.get();
     List<QueryDocumentSnapshot> todos = querySnapshot.docs;
 
@@ -106,8 +138,17 @@ class _ListTabState extends State<ListTab> {
       return TodoDM.fromjson(json);
     }).toList();
    TodosList= TodosList.where((todo) =>
-    todo.date.year == selectedcalenderdate.year &&
-        todo.date.month == selectedcalenderdate.month &&
-        todo.date.day == selectedcalenderdate.day).toList();
+    todo.date.year == SelectedCalenderDate.year &&
+        todo.date.month == SelectedCalenderDate.month &&
+        todo.date.day == SelectedCalenderDate.day).toList();
+   setState(() {
+   });
+  }
+
+  void DeleteData(TodoDM todo) {
+    FirebaseFirestore.instance.collection(UserDM.CollectionName).doc(UserDM.currentUser!.ID).collection(TodoDM.CollectionName).doc(todo.id).delete().then(
+          (doc) => print("Document deleted"),
+      onError: (e) => print("Error updating document $e"),
+    );
   }
 }

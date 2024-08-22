@@ -4,6 +4,7 @@ import 'package:todo/UI/Screens/List_Tab.dart';
 import 'package:todo/UI/Screens/Settings.dart';
 import 'package:todo/utilties/AppColors.dart';
 import 'package:todo/utilties/AppStyle.dart';
+import 'package:todo/utilties/usermodel.dart';
 
 class Home extends StatefulWidget {
   static const String routeName = "home";
@@ -16,8 +17,14 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int tabindex = 0;
-  List<Widget> tabs = [ListTab(), Settings()];
+  List<Widget> tabs = [];
 
+  GlobalKey<ListTabState> liststate=GlobalKey();
+@override
+  void initState() {
+  super.initState();
+  tabs=[ListTab(key: liststate), Settings()];
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +32,7 @@ class _HomeState extends State<Home> {
           title: Container(
             margin: EdgeInsets.fromLTRB(12, 25, 12, 12),
             child:
-                Padding(padding: EdgeInsets.all(15), child: Text("To Do List")),
+                Padding(padding: EdgeInsets.all(15), child: Text("Welcome Back, ${UserDM.currentUser?.name}")),
           ),
           titleTextStyle: AppStyle.AppBarStyle),
       bottomNavigationBar: BottomNavigationBarBuilder(),
@@ -59,7 +66,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  buildFAB() {
+  buildFAB()  {
     return FloatingActionButton(
       elevation: 12,
       shape: StadiumBorder(
@@ -67,8 +74,10 @@ class _HomeState extends State<Home> {
         color: Colors.white,
         width: 4,
       )),
-      onPressed: () {
-        AddBottomSheet.show(context);
+      onPressed: () async{
+        await AddBottomSheet.show(context);
+        liststate.currentState?.LoadDataFromDatabase();
+
       },
       child: Icon(Icons.add),
       backgroundColor: AppColors.secondryLight,
